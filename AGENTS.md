@@ -33,3 +33,22 @@
 - 提交只包含当前任务相关改动；commit message 不自动添加 agent 为 co-author。
 - 发版时按 `README.md` 同步版本与 `CHANGELOG.md`；普通改动不要随意提升版本号。
 - 本文件只保留对多数后续会话都有用的约定。优先重写、删减并指向权威文件，避免复制容易过时的实现细节。
+
+
+## Native Rust migration (main is not yet fully ported)
+
+- Native Rust sources of truth live in `src/`; a typed, headless public
+  `kanyu_core` API and a thin `kanyu` CLI share the **same** algorithms.
+  Continue replacing the remaining Python domains, and never call a Python
+  subprocess from the Rust runtime as a compatibility shortcut.
+- The legacy `scripts/kanyu/` stays as a parity oracle until the Rust
+  equivalent passes differential fixtures. Preserve `SKILL.md` compatibility
+  while migration is incomplete. See `docs/RUSTIFY_STATUS.md` for progress.
+- Put native edits on a same-repository feature branch; use rustfmt,
+  strict Clippy, tests, executable smoke and the approved self-hosted Actions
+  lane before future main promotion. The initial staged implementation was
+  merged to main at the owner's explicit request with verification deferred;
+  this is an exception, not evidence of a passing build. See `HANDOFF.md`.
+  Do not commit binaries, caches, `target/`,
+  or an HTML/JS replacement runtime.
+- Crates.io publication is disabled until the source license is verified.

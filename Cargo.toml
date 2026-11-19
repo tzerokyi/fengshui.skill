@@ -1,0 +1,22 @@
+[package]
+name = "kanyu-core"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+description = "Deterministic traditional feng shui calculations with a native Rust CLI"
+repository = "https://github.com/tzerokyi/fengshui.skill"
+readme = "README.md"
+keywords = ["feng-shui", "luoshu", "bazhai", "feixing"]
+categories = ["algorithms", "command-line-utilities"]
+# The source repository has no LICENSE. Verify permissions before publication.
+publish = false
+
+[lib]
+name = "kanyu_core"
+path = "src/lib.rs"
+
+[[bin]]
+name = "kanyu"
+path = "src/bin/kanyu.rs"
+
+[dependencies]
