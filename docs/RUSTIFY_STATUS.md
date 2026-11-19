@@ -3,7 +3,7 @@
 ## Ownership and scope
 
 Source snapshot: fork main commit `a996a21745d0adc7fa343f208dc02920c2a7da8f` (2026-11-19).
-This is a **staged migration**, not a claim of full parity. The original Agent
+This is a **staged migration merged into main by explicit owner request (2026-11-19)**, not a claim of full parity. The original Agent
 Skills packaging, Python implementation, reference documents and regression
 fixtures remain a stable oracle until each subsystem is validated against it.
 No HTML/JavaScript/Python is executed by the new Rust binary, which does not
@@ -78,5 +78,8 @@ verified. Do not assume an SPDX license for code whose permission is unknown.
 Only source/manifests belong in Git. Keep `target/` and binaries out.
 Self-hosted Linux Actions with 12 Cargo jobs and persistent target cache is
 the intended build lane. Windows compilation/runtime remains an explicit
-future gate, not an assumption. Feature branch promotion requires a green
+future gate, not an assumption. Future feature-branch promotion normally requires a green
 exact-SHA rustfmt, strict Clippy, tests and linked CLI JSON smoke test.
+For this initial Rustification import, the owner explicitly ordered main
+integration before validation. **Build/test/parity are NOT verified**.
+See [HANDOFF.md](../HANDOFF.md) for the outstanding implementation backlog.

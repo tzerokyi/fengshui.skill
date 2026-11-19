@@ -1,5 +1,7 @@
 # 堪舆子 · 传统风水顾问
 
+> **Rust migration status (2026-11-19):** Main contains a **partial, unverified** native Rust core and CLI. The original Python skill still works as its separate legacy implementation. Read [HANDOFF.md](HANDOFF.md) and [docs/RUSTIFY_STATUS.md](docs/RUSTIFY_STATUS.md) before changing or shipping the Rust path. No 100%-Rust/parity claim yet.
+
 > 「峦头为体，理气为用。」（堪舆家常言）
 
 **一个遵循 [Agent Skills 开放标准](https://agentskills.io) 的 Skill，将传统堪舆学蒸馏为可对话的风水顾问。** 运用玄空飞星、八宅明镜、择日学等传统方法，帮助你分析居住环境、选择吉日、化解煞气。
