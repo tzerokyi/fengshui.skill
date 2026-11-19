@@ -338,3 +338,24 @@ fengshui.skill/
 ## 免责声明
 
 本项目基于传统堪舆学理论，仅供学习、参考与文化探讨。风水为辅，人为为主。重大居住与人生决策请结合实际情况综合考量，勿作为唯一依据。
+
+
+---
+
+## Native Rust core (work in progress)
+
+A zero-dependency Rust library (`kanyu_core`) and native command-line tool
+(`kanyu`) are being migrated from the deterministic Python calculation
+modules. These are **not yet a full replacement** for the Python Agent Skills.
+For accurate provenance, parity and outstanding capabilities, see
+[docs/RUSTIFY_STATUS.md](docs/RUSTIFY_STATUS.md).
+
+```sh
+cargo run --locked --bin kanyu -- doctor --json
+cargo run --locked --bin kanyu -- feixing --sit 子 --yun 8 --annual 2026 --json
+cargo run --locked --bin kanyu -- mingua --year 1990 --gender f --json
+```
+
+The Rust CLI's year inputs are Li-Chun-adjusted years. Date conversion,
+Ba Zi, date selection and city maps are explicitly pending; no Python
+subprocess, HTML/JavaScript frontend or web service is required by Rust.
