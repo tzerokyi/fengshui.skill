@@ -2,6 +2,9 @@
 //!
 //! JSON schema version 1; stdout is data, stderr is diagnostics.
 
+use kanyu_core::almanac::day_flags;
+use kanyu_core::ganzhi::ten_god;
+use kanyu_core::zeri::{event, score_day, DayFacts};
 use kanyu_core::bazhai::{east_west, younian, Gender, Mingua};
 use kanyu_core::core::{yun_of_year, Mountain, Palace, StarGrid, GRID, LUOSHU_PATH};
 use kanyu_core::feixing::{feixing_chart, jian_warnings, main_pattern, FeixingChart, StarEntry};
@@ -19,12 +22,17 @@ Usage:
 
 Commands:
   doctor        Inspect native capabilities (no display or network)
+  ten-god       Gan-Zhi ten-god lookup
+  day-flags     Pure date taboo lookup (no ephemeris)
+  zeri-score    Score externally supplied almanac day facts
   mingua        Ming Gua for an already Li-Chun-adjusted birth year
   bazhai        House/person Eight Mansions (Ba Zhai)
   feixing       Xuan Kong flying-star chart
   liunian       Annual/monthly Purple-White stars and yearly Sha directions
 
 Examples:
+  kanyu ten-god --day-stem 甲 --other-stem 庚 --json
+  kanyu day-flags --year-zhi 午 --month-zhi 巳 --day-gz 癸巳 --jianchu 建 --json
   kanyu mingua --year 1990 --gender f --json
   kanyu bazhai --facing 180 --year 1990 --gender f --json
   kanyu feixing --sit 子 --yun 8 --annual 2026 --json
@@ -293,7 +301,7 @@ fn run(argv: &[String]) -> Result<String, String> {
                     ("crate", quote("kanyu-core")),
                     (
                         "implemented",
-                        strings(["mingua", "bazhai", "feixing", "liunian"].map(|s| s.to_owned())),
+                        strings(["mingua", "bazhai", "feixing", "liunian", "ten-god", "day-flags", "zeri-score"].map(|s| s.to_owned())),
                     ),
                     (
                         "not_ported",
@@ -302,7 +310,120 @@ fn run(argv: &[String]) -> Result<String, String> {
                     ("mcp_transport", "false".to_owned()),
                 ]))
             } else {
-                Ok("Native Rust core: mingua, bazhai, feixing, liunian\nPending: day, zeri, bazi, city-wuxing-map, HTML renderer\nMCP adapter: not installed".to_owned())
+                Ok("Native Rust core: mingua, bazhai, feixing, liunian, ten-god, day-flags, zeri-score\nPending: day, zeri, bazi, city-wuxing-map, HTML renderer\nMCP adapter: not installed".to_owned())
+            }
+        }
+        "ten-god" => {
+            let args = Args::parse(&argv[1..], &["--day-stem", "--other-stem"], &[])?;
+            let single = |name: &str| -> Result<char, String> {
+                let value = args.required(name)?;
+                let mut chars = value.chars();
+                match (chars.next(), chars.next()) {
+                    (Some(c), None) => Ok(c),
+                    _ => Err(format!("{name} must contain one Gan character")),
+                }
+            };
+            let day = single("--day-stem")?;
+            let other = single("--other-stem")?;
+            let result = ten_god(day, other).map_err(|error| error.to_string())?;
+            if args.has("--json") {
+                Ok(object(&[
+                    ("schema_version", "1".to_owned()),
+                    ("command", quote("ten-god")),
+                    ("day_stem", quote(&day.to_string())),
+                    ("other_stem", quote(&other.to_string())),
+                    ("relation", quote(result)),
+                ]))
+            } else {
+                Ok(format!("{day}日干对{other}：{result}"))
+            }
+        }
+        "day-flags" => {
+            let args = Args::parse(&argv[1..], &["--year-zhi", "--month-zhi", "--day-gz", "--jianchu"], &[])?;
+            let single = |name: &str| -> Result<char, String> {
+                let value = args.required(name)?;
+                let mut chars = value.chars();
+                match (chars.next(), chars.next()) {
+                    (Some(c), None) => Ok(c),
+                    _ => Err(format!("{name} must contain one Zhi character")),
+                }
+            };
+            let flags = day_flags(
+                single("--year-zhi")?,
+                single("--month-zhi")?,
+                args.required("--day-gz")?,
+                args.required("--jianchu")?,
+            ).map_err(|error| error.to_string())?;
+            if args.has("--json") {
+                Ok(object(&[
+                    ("schema_version", "1".to_owned()),
+                    ("command", quote("day-flags")),
+                    ("flags", strings(flags.flags.iter().map(|s| s.to_string()))),
+                    ("conventional", strings(flags.conventional.iter().map(|s| s.to_string()))),
+                ]))
+            } else {
+                Ok(format!("硬排除:{} 俗忌:{}", flags.flags.join("、"), flags.conventional.join("、")))
+            }
+        }
+        "zeri-score" => {
+            let args = Args::parse(
+                &argv[1..],
+                &["--event", "--jianchu", "--chong-zhi", "--yi", "--ji", "--jishen",
+                  "--flags", "--suji", "--birth-years"],
+                &["--huangdao"],
+            )?;
+            let ev = event(args.required("--event")?).map_err(|error| error.to_string())?;
+            let branch = args.required("--chong-zhi")?;
+            let mut chars = branch.chars();
+            let chong_zhi = match (chars.next(), chars.next()) {
+                (Some(c), None) => c,
+                _ => return Err("--chong-zhi must be one Zhi character".to_owned()),
+            };
+            let csv = |option: &str| -> Vec<&str> {
+                args.value(option)
+                    .unwrap_or("")
+                    .split(',')
+                    .map(str::trim)
+                    .filter(|s| !s.is_empty())
+                    .collect()
+            };
+            let yi = csv("--yi");
+            let ji = csv("--ji");
+            let jishen = csv("--jishen");
+            let flags = csv("--flags");
+            let suji = csv("--suji");
+            let birth_years = csv("--birth-years").into_iter()
+                .map(|n| n.parse::<i32>().map_err(|_| format!("invalid birth year: {n}")))
+                .collect::<Result<Vec<_>,_>>()?;
+            let facts = DayFacts {
+                jianchu: args.required("--jianchu")?,
+                chong_zhi,
+                huangdao: args.has("--huangdao"),
+                yi: &yi,
+                ji: &ji,
+                jishen: &jishen,
+                flags: &flags,
+                suji: &suji,
+            };
+            let result = score_day(&facts, ev, &birth_years)
+                .map_err(|error| error.to_string())?;
+            if args.has("--json") {
+                Ok(object(&[
+                    ("schema_version", "1".to_owned()),
+                    ("command", quote("zeri-score")),
+                    ("event", quote(ev.name)),
+                    ("score", result.score.to_string()),
+                    ("eligible", result.eligible().to_string()),
+                    ("reasons", strings(result.reasons)),
+                    ("excluded", strings(result.excluded)),
+                    ("notes", strings(result.notes)),
+                ]))
+            } else {
+                Ok(format!(
+                    "{}: {}점, 후보={}, 제외={}, 근거={}",
+                    ev.name, result.score, result.eligible(),
+                    result.excluded.join("、"), result.reasons.join("、"),
+                ))
             }
         }
         "mingua" => {

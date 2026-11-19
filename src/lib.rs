@@ -6,10 +6,13 @@
 //!
 //! The public API is independent of a CLI, Python, HTML, and the operating system.
 
+pub mod almanac;
 pub mod bazhai;
 pub mod core;
 pub mod feixing;
+pub mod ganzhi;
 pub mod zibai;
+pub mod zeri;
 
 use std::fmt;
 
@@ -24,6 +27,9 @@ pub enum Error {
     InvalidStar,
     InvalidYun,
     InvalidMonthIndex,
+    InvalidGanzhi,
+    InvalidDayOfYear,
+    InvalidEvent,
 }
 
 impl fmt::Display for Error {
@@ -37,6 +43,9 @@ impl fmt::Display for Error {
             Self::InvalidStar => "star must be 1..=9",
             Self::InvalidYun => "yun must be 1..=9",
             Self::InvalidMonthIndex => "solar month index must be 1..=12 (寅=1)",
+            Self::InvalidGanzhi => "invalid Gan-Zhi stem, branch or pillar",
+            Self::InvalidDayOfYear => "day ordinal must be 1..=366",
+            Self::InvalidEvent => "unknown event for date selection",
         })
     }
 }

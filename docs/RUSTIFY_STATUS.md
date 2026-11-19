@@ -15,10 +15,10 @@ launch Python subprocesses.
 | `scripts/kanyu/bazhai.py` | `src/bazhai.rs` | Ported | Ming Gua, eight mansion symmetry, 3 Yuan |
 | `scripts/kanyu/feixing.py` | `src/feixing.rs` | Ported | 8/9 periods, 24 mountain patterns, replacement stars |
 | `scripts/kanyu/zibai.py` | `src/zibai.rs` | Ported | Annual/monthly center, year Sha, 3 Yuan |
-| `scripts/kanyu/almanac.py` | — | Pending | Lunar/calendar/solar-term exactness |
-| `scripts/kanyu/ganzhi.py` | — | Pending | Full ten-gods and gan-zhi lookup parity |
+| `scripts/kanyu/almanac.py` | `src/almanac.rs` | Partial: day taboos and solar offset only | Lunar/calendar/solar-term exactness still pending |
+| `scripts/kanyu/ganzhi.py` | `src/ganzhi.rs` | Partial: stems, ten gods, phases, pairs, seasons, empty branches | Full natal relations and shensha pending |
 | `scripts/kanyu/bazi.py` | — | Pending | Solar time, DST, zones, pillars, luck cycles |
-| `scripts/kanyu/zeri.py` | — | Pending | Almanac-derived date filtering; no guessing |
+| `scripts/kanyu/zeri.py` | `src/zeri.rs` | Partial: scoring and exclusion rules | Date-range selection and actual almanac facts pending |
 | `scripts/kanyu/render.py` | CLI text adapter | Partial | No legacy narrative/snapshot parity claim |
 | `scripts/kanyu/pages.py`, `assets/` | — | Not ported | Interactive HTML excluded from Rust runtime |
 | `skills/city-wuxing-map/scripts/` | — | Pending | Full coverage, geometry, provenance |
@@ -42,7 +42,7 @@ silently convert Gregorian birthdays with a guessed February 4 boundary.
 Month indices are solar-term months (寅=1), not Gregorian months.
 
 **CLI contract:** `--help`, `--version`, `doctor`, `mingua`,
-`bazhai`, `feixing`, `liunian`, `--json`. JSON schema version 1.
+`bazhai`, `feixing`, `liunian`, `ten-god`, `day-flags`, `zeri-score`, `--json`. JSON schema version 1.
 Stdout contains only results, stderr diagnostics, invalid arguments exit 2.
 Operations are pure/read-only so no dry-run switch is needed. A future optional
 MCP stdio adapter must delegate to the library API, not fork its algorithms.
